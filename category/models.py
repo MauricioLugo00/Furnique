@@ -13,7 +13,6 @@ class Category(models.Model):
         ordering = ['category_name']
 
     def get_url(self):
-        """Genera la URL para filtrar productos por categoría."""
         return reverse('products_by_category', args=[self.slug])
 
     def __str__(self):

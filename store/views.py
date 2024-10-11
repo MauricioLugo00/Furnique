@@ -3,7 +3,7 @@ from .models import Product, ReviewRating, ProductGallery
 from category.models import Category
 from carts.models import CartItem
 from carts.views import _cart_id
-from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
+from django.core.paginator import Paginator
 from django.db.models import Q
 from .forms import ReviewForm
 from django.contrib import messages
@@ -54,7 +54,7 @@ def product_detail(request, category_slug, product_slug):
         orderproduct = None
 
 
-    reviews = ReviewRating.objects.filter(product__id=single_product.id, status=True)
+    reviews = ReviewRating.objects.filter(product=single_product, status=True).select_related('user')
 
     product_gallery = ProductGallery.objects.filter(product_id=single_product.id)
 
@@ -71,6 +71,10 @@ def product_detail(request, category_slug, product_slug):
 
 
 def search(request):
+    products = None
+    if product_count == 0:
+        messages.info(request, 'No se encontraron productos en Furnique que coincidan con tu búsqueda.')
+    
     if 'keyword' in request.GET:
         keyword = request.GET['keyword']
         if keyword:
@@ -91,7 +95,7 @@ def submit_review(request, product_id):
             reviews = ReviewRating.objects.get(user__id=request.user.id, product__id=product_id)
             form = ReviewForm(request.POST, instance=reviews)
             form.save()
-            messages.success(request, 'Muchas gracias!, tu comentario ha sido actualizado.')
+            messages.success(request, 'Muchas gracias!, tu comentario en Furnique ha sido actualizado.')
             return redirect(url)
         except ReviewRating.DoesNotExist:
             form = ReviewForm(request.POST)
@@ -104,5 +108,5 @@ def submit_review(request, product_id):
                 data.product_id = product_id
                 data.user_id = request.user.id
                 data.save()
-                messages.success(request, 'Muchas gracias!, tu comentario ha sido publicado.')
+                messages.success(request, 'Muchas gracias!, tu comentario en Furnique ha sido publicado.')
                 return redirect(url)
