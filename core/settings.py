@@ -62,7 +62,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'furniquedb',
         'USER': 'root',
-        'PASSWORD': '31261263Aa',
+        'PASSWORD': '0000',
         'HOST': 'localhost',
         'PORT': '3306',
     }
