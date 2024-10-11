@@ -14,4 +14,6 @@ def home(request):
         'reviews': reviews,  # Envía el diccionario de reseñas al contexto
     }
 
-    return render(request, 'home.html', context)
+    return render(request, '../templates/home.html', context)
+
+
