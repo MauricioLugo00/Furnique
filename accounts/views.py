@@ -41,16 +41,19 @@ def register(request):
             password = form.cleaned_data['password']
             username = email.split("@")[0]
 
+            # Asegúrate de que el número de teléfono no esté vacío
+            if not phone_number:
+                messages.error(request, 'El número de teléfono es obligatorio.')
+                return render(request, 'accounts/register.html', {'form': form})
+
             user = Accounts.objects.create_user(
                 first_name=first_name,
                 last_name=last_name,
                 email=email,
                 username=username,
                 password=password,
+                phone_number=phone_number  # Pasa el número de teléfono aquí
             )
-            user.phone_number = phone_number
-            user.save()
-
             UserProfile.objects.create(user_id=user.id, profile_picture='default/default-user.png')
 
             send_verification_email(user, request)
@@ -61,14 +64,19 @@ def register(request):
     return render(request, 'accounts/register.html', context)
 
 
+
 def login(request):
     if request.method == 'POST':
         email = request.POST['email']
         password = request.POST['password']
 
-        user = auth.authenticate(email=email, password=password)
+        # Para depuración
+        print(f'Intentando iniciar sesión con Email: {email} y Contraseña: {password}')
 
-        if user is not None:
+        # Autenticación del usuario
+        user = auth.authenticate(username=email, password=password)
+
+        if user is not None and user.is_active:
             try:
                 cart = Cart.objects.get(cart_id=_cart_id(request))
                 is_cart_item_exist = CartItem.objects.filter(cart=cart).exists()
@@ -93,11 +101,14 @@ def login(request):
                                 item.user = user
                                 item.save()
             except Cart.DoesNotExist:
-                pass  # Manejar el caso en el que no hay un carrito existente.
+                # Manejar el caso en el que no hay un carrito existente
+                pass
 
+            # Iniciar sesión
             auth.login(request, user)
             messages.success(request, 'Has iniciado sesión exitosamente')
 
+            # Redirigir a la página anterior o al dashboard
             url = request.META.get('HTTP_REFERER')
             try:
                 query = requests.utils.urlparse(url).query
@@ -109,10 +120,11 @@ def login(request):
                 return redirect('dashboard')
 
         else:
-            messages.error(request, 'Los datos son incorrectos')
+            messages.error(request, 'Los datos son incorrectos o el usuario no está activo')
             return redirect('login')
 
     return render(request, 'accounts/login.html')
+
 
 
 @login_required(login_url='login')

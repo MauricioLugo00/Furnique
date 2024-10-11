@@ -3,17 +3,18 @@ from store.models import Product, ReviewRating
 
 def home(request):
     products = Product.objects.all().filter(is_available=True).order_by('created_date')
-    
-    reviews = {}  # Inicializa reviews como un diccionario
+
+    # Inicializa reviews como una lista vacía
+    reviews = []
 
     for product in products:
-        reviews[product.id] = ReviewRating.objects.filter(product_id=product.id, status=True)
+        # Agrega las reseñas para cada producto a la lista
+        product_reviews = ReviewRating.objects.filter(product_id=product.id, status=True)
+        reviews.extend(product_reviews)  # Agrega las reseñas a la lista
 
     context = {
         'products': products,
-        'reviews': reviews,  # Envía el diccionario de reseñas al contexto
+        'reviews': reviews,
     }
 
-    return render(request, '../templates/home.html', context)
-
-
+    return render(request, 'home.html', context)

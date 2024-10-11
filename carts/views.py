@@ -3,6 +3,7 @@ from store.models import Product, Variation
 from .models import Cart, CartItem
 from django.core.exceptions import ObjectDoesNotExist
 from django.contrib.auth.decorators import login_required
+from decimal import Decimal
 
 def _cart_id(request):
     # Obtiene o crea el ID del carrito de la sesión
@@ -200,10 +201,9 @@ def remove_cart_item(request, product_id, cart_item_id):
     
     return redirect('cart')
 
-def cart(request, total=0, quantity=0,cart_items=None):
+def cart(request, total=0, quantity=0, cart_items=None):
     tax = 0
-    grand_total=0
-    
+    grand_total = 0
     try:
         if request.user.is_authenticated:
             cart_items = CartItem.objects.filter(user=request.user, is_active=True)
@@ -212,14 +212,14 @@ def cart(request, total=0, quantity=0,cart_items=None):
             cart_items = CartItem.objects.filter(cart=cart, is_active=True)
 
         for cart_item in cart_items:
-            total += (cart_item.product.price * cart_item.quantity)
+            total += (Decimal(cart_item.product.price) * Decimal(cart_item.quantity))
             quantity += cart_item.quantity
-        tax = round((16/100) * total, 2)
+
+        tax = round((Decimal(16) / Decimal(100)) * total, 2)
         grand_total = total + tax
-            
+
     except ObjectDoesNotExist:
         pass
-
 
     context = {
         'total': total,
@@ -231,11 +231,12 @@ def cart(request, total=0, quantity=0,cart_items=None):
 
     return render(request, 'store/cart.html', context)
 
+
 @login_required(login_url='login')
 def checkout(request, total=0, quantity=0, cart_items=None):
     tax = 0
     grand_total = 0
-    
+
     try:
         if request.user.is_authenticated:
             cart_items = CartItem.objects.filter(user=request.user, is_active=True)

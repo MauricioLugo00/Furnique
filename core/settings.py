@@ -1,14 +1,15 @@
 import os
 from pathlib import Path
+from decouple import config
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = 'django-insecure-*cp9b&+$-&wc%auaq3-=+h3bc2kn9_4y^zxxi=(xaz!8h_vq+y'
+SECRET_KEY = config('SECRET_KEY')
 
 DEBUG = True
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = []
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -32,7 +33,9 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'django_session_timeout.middleware.SessionTimeoutMiddleware',  
 ]
+
 
 SESSION_EXPIRE_SECONDS = 1800
 SESSION_EXPIRE_AFTER_LAST_ACTIVITY = True
@@ -43,7 +46,7 @@ ROOT_URLCONF = 'core.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS':  [os.path.join(BASE_DIR, 'templates')],
+        'DIRS': [BASE_DIR / 'templates'],  # Asegúrate de que esta línea esté correcta
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -57,22 +60,21 @@ TEMPLATES = [
         },
     },
 ]
-
 WSGI_APPLICATION = 'core.wsgi.application'
 
 AUTH_USER_MODEL = 'accounts.Accounts'
 
-
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'furniquedb',
-        'USER': 'root',
-        'PASSWORD': '31261263Aa',
-        'HOST': 'localhost',
-        'PORT': '3306',
+        'NAME': config('DB_NAME'),
+        'USER': config('DB_USER'),
+        'PASSWORD': config('DB_PASSWORD'),
+        'HOST': config('HOST'),
+        'PORT': config('PORT'),
     }
 }
+
 
 
 AUTH_PASSWORD_VALIDATORS = [
@@ -96,15 +98,25 @@ USE_I18N = True
 USE_TZ = True
 
 STATIC_URL = 'static/'
-STATIC_URL = 'static/'
 STATIC_ROOT = BASE_DIR /'static'
+STATICFILES_DIRS = [
+    'core/static'
+]
 
 MEDIA_URL = 'media/'
 MEDIA_ROOT = BASE_DIR /'media'
-
-DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 from django.contrib.messages import constants as messages
 MESSAGE_TAGS = {
     messages.ERROR : 'danger',
 }
+
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = config('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD')
+
+
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
