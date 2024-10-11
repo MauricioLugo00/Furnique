@@ -76,7 +76,7 @@ class UserProfile(models.Model):
     address_line_2 = models.CharField(blank=True, max_length=100)
     profile_picture = models.ImageField(blank=True, upload_to='userprofile')
     city = models.CharField(blank=True, max_length=20)
-    state = models.CharField(blank=True, max_length=5)
+    state = models.CharField(blank=True, max_length=50)
     country = models.CharField(blank=True, max_length=20)
 
     def __str__(self):

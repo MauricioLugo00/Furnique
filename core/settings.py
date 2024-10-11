@@ -10,6 +10,9 @@ DEBUG = True
 ALLOWED_HOSTS = ['*']
 
 INSTALLED_APPS = [
+    
+    'admin_thumbnails',
+    
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -59,7 +62,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'furniquedb',
         'USER': 'root',
-        'PASSWORD': '0000',
+        'PASSWORD': '31261263Aa',
         'HOST': 'localhost',
         'PORT': '3306',
     }
