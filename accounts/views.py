@@ -3,32 +3,16 @@ from .forms import RegistrationForm, UserProfileForm, UserForm
 from .models import Accounts, UserProfile
 from orders.models import Order
 from django.contrib import messages, auth
-from django.contrib.auth.decorators import login_required
-from django.contrib.sites.shortcuts import get_current_site
-from django.template.loader import render_to_string
-from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
-from django.contrib.auth.tokens import default_token_generator
-from django.utils.encoding import force_bytes
-from django.core.mail import EmailMessage
+from django.contrib.auth.decorators import login_required 
+from django.contrib.auth import authenticate, login as auth_login
 from carts.views import _cart_id
 from carts.models import Cart, CartItem
 import requests
+import random
+from django.views.decorators.csrf import csrf_protect
 
-
-def send_verification_email(user, request):
-    current_site = get_current_site(request)
-    mail_subject = 'Activa tu cuenta en Furnique para continuar'
-    body = render_to_string('accounts/account_verification_email.html', {
-        'user': user,
-        'domain': current_site,
-        'uid': urlsafe_base64_encode(force_bytes(user.pk)),
-        'token': default_token_generator.make_token(user),
-    })
-    to_email = user.email
-    send_email = EmailMessage(mail_subject, body, to=[to_email])
-    send_email.send()
-
-
+@csrf_protect
+@csrf_protect
 def register(request):
     form = RegistrationForm()
     if request.method == 'POST':
@@ -39,51 +23,56 @@ def register(request):
             phone_number = form.cleaned_data['phone_number']
             email = form.cleaned_data['email']
             password = form.cleaned_data['password']
-            username = email.split("@")[0]
+            confirm_password = request.POST.get('confirm_password')
 
-            # Asegúrate de que el número de teléfono no esté vacío
-            if not phone_number:
-                messages.error(request, 'El número de teléfono es obligatorio.')
-                return render(request, 'accounts/register.html', {'form': form})
+            # Verificar que las contraseñas coinciden
+            if password != confirm_password:
+                messages.error(request, 'Las contraseñas no coinciden.')
+                return redirect('register')
 
+            username = email.split("@")[0]  # Crear nombre de usuario a partir del email
+
+            # Crear el usuario sin activación
             user = Accounts.objects.create_user(
                 first_name=first_name,
                 last_name=last_name,
-                email=email,
                 username=username,
+                email=email,
                 password=password,
-                phone_number=phone_number  # Pasa el número de teléfono aquí
+                phone_number=phone_number,
             )
-            UserProfile.objects.create(user_id=user.id, profile_picture='default/default-user.png')
 
-            send_verification_email(user, request)
+            # Crear el perfil del usuario
+            profile = UserProfile(user=user, profile_picture='default/default-user.png')
+            profile.save()
 
-            return redirect(f'/accounts/login/?command=verification&email={email}')
+            messages.success(request, 'Te has registrado exitosamente. Puedes iniciar sesión ahora.')
+            return redirect('/accounts/login/')
 
-    context = {'form': form}
-    return render(request, 'accounts/register.html', context)
+    return render(request, 'accounts/register.html', {'form': form})
 
 
-
+@csrf_protect
+@csrf_protect
 def login(request):
     if request.method == 'POST':
-        email = request.POST['email']
-        password = request.POST['password']
+        email = request.POST.get('email')
+        password = request.POST.get('password')
 
-        # Para depuración
-        print(f'Intentando iniciar sesión con Email: {email} y Contraseña: {password}')
+        if not email or not password:
+            messages.error(request, 'Por favor, completa todos los campos.')
+            return redirect('login')
 
-        # Autenticación del usuario
-        user = auth.authenticate(username=email, password=password)
+        # Autenticación del usuario usando el email
+        user = authenticate(request, username=email, password=password)
 
-        if user is not None and user.is_active:
+        if user is not None:
             try:
                 cart = Cart.objects.get(cart_id=_cart_id(request))
                 is_cart_item_exist = CartItem.objects.filter(cart=cart).exists()
 
                 if is_cart_item_exist:
                     product_variation = [list(item.variation.all()) for item in CartItem.objects.filter(cart=cart)]
-
                     cart_items = CartItem.objects.filter(user=user)
                     ex_var_list = [list(item.variation.all()) for item in cart_items]
                     ids = [item.id for item in cart_items]
@@ -94,19 +83,17 @@ def login(request):
                             item_id = ids[index]
                             item = CartItem.objects.get(id=item_id)
                             item.quantity += 1
-                            item.user = user
                             item.save()
                         else:
                             for item in CartItem.objects.filter(cart=cart):
                                 item.user = user
                                 item.save()
             except Cart.DoesNotExist:
-                # Manejar el caso en el que no hay un carrito existente
                 pass
 
             # Iniciar sesión
-            auth.login(request, user)
-            messages.success(request, 'Has iniciado sesión exitosamente')
+            auth_login(request, user)
+            messages.success(request, 'Has iniciado sesión exitosamente.')
 
             # Redirigir a la página anterior o al dashboard
             url = request.META.get('HTTP_REFERER')
@@ -118,13 +105,11 @@ def login(request):
                     return redirect(nextPage)
             except (ValueError, KeyError):
                 return redirect('dashboard')
-
         else:
-            messages.error(request, 'Los datos son incorrectos o el usuario no está activo')
+            messages.error(request, 'Los datos son incorrectos.')
             return redirect('login')
 
     return render(request, 'accounts/login.html')
-
 
 
 @login_required(login_url='login')
@@ -133,22 +118,6 @@ def logout(request):
     messages.success(request, 'Has salido de sesión')
     return redirect('login')
 
-
-def activate(request, uidb64, token):
-    try:
-        uid = urlsafe_base64_decode(uidb64).decode()
-        user = Accounts._default_manager.get(pk=uid)
-    except (TypeError, ValueError, OverflowError, Accounts.DoesNotExist):
-        user = None
-
-    if user is not None and default_token_generator.check_token(user, token):
-        user.is_active = True
-        user.save()
-        messages.success(request, 'Felicidades, tu cuenta está activa! Ya puedes encontrar los mejores productos en nuestro increible catalogo de mobiliarios, solo en Furnique!')
-        return redirect('login')
-    else:
-        messages.error(request, 'No se pudo completar la activación de la cuenta :(')
-        return redirect('register')
 
 
 @login_required(login_url='login')
@@ -167,33 +136,44 @@ def dashboard(request):
 
 def forgotPassword(request):
     if request.method == 'POST':
-        email = request.POST['email']
-        if Accounts.objects.filter(email=email).exists():
-            user = Accounts.objects.get(email=email)
-            send_verification_email(user, request)
-            messages.success(request, 'Un email fue enviado a tu bandeja de entrada para recuperar tu contraseña')
-            return redirect('login')
+        phone_number = request.POST['phone_number']
+        if Accounts.objects.filter(phone_number=phone_number).exists():
+            user = Accounts.objects.get(phone_number=phone_number)
+            
+            # Generar un código de verificación
+            verification_code = random.randint(1000, 9999)
+            
+            # Guardar el código en la sesión
+            request.session['verification_code'] = verification_code
+            request.session['user_id'] = user.id
+            
+            # Aquí se puede integrar una API de envío de SMS
+            # Enviar el código al teléfono registrado (usando una API SMS, o mostrar en pantalla para demo)
+            messages.success(request, f'Tu código de verificación es {verification_code}')
+            
+            return redirect('verify_code')  # Redirige al formulario para ingresar el código
         else:
-            messages.error(request, 'La cuenta de usuario no existe o surgió un problema')
+            messages.error(request, 'No se encontró ninguna cuenta con ese número de teléfono')
             return redirect('forgotPassword')
 
     return render(request, 'accounts/forgotPassword.html')
 
 
-def resetpassword_validate(request, uidb64, token):
-    try:
-        uid = urlsafe_base64_decode(uidb64).decode()
-        user = Accounts._default_manager.get(pk=uid)
-    except (TypeError, ValueError, OverflowError, Accounts.DoesNotExist):
-        user = None
 
-    if user is not None and default_token_generator.check_token(user, token):
-        request.session['uid'] = uid
-        messages.success(request, 'Por favor escribe tu nueva contraseña')
-        return redirect('resetPassword')
-    else:
-        messages.error(request, 'El link ha caducado')
-        return redirect('login')
+def verify_code(request):
+    if request.method == 'POST':
+        entered_code = request.POST['verification_code']
+        stored_code = request.session.get('verification_code')
+        
+        if str(entered_code) == str(stored_code):
+            messages.success(request, 'Código verificado. Ahora puedes cambiar tu contraseña.')
+            return redirect('resetPassword')
+        else:
+            messages.error(request, 'El código ingresado es incorrecto.')
+            return redirect('verify_code')
+    
+    return render(request, 'accounts/verify_code.html')
+
 
 
 def resetPassword(request):
@@ -202,15 +182,21 @@ def resetPassword(request):
         confirm_password = request.POST['confirm_password']
 
         if password == confirm_password:
-            uid = request.session.get('uid')
-            user = Accounts.objects.get(pk=uid)
+            user_id = request.session.get('user_id')
+            user = Accounts.objects.get(pk=user_id)
             user.set_password(password)
             user.save()
+            
+            # Limpiar la sesión
+            del request.session['user_id']
+            del request.session['verification_code']
+            
             messages.success(request, 'La contraseña se actualizó correctamente')
             return redirect('login')
         else:
             messages.error(request, 'La contraseña de confirmación no concuerda')
             return redirect('resetPassword')
+    
     return render(request, 'accounts/resetPassword.html')
 
 

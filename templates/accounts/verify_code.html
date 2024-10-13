@@ -1,0 +1,5 @@
+<form method="POST">
+    {% csrf_token %}
+    <input type="text" name="verification_code" placeholder="Ingresa tu código de verificación" required>
+    <button type="submit">Verificar código</button>
+</form>

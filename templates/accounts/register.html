@@ -2,66 +2,78 @@
 
 {% block content %}
 
-
 <!-- ========================= SECTION CONTENT ========================= -->
 <section class="section-content padding-y">
 
     <!-- ============================ COMPONENT REGISTER   ================================= -->
-        <div class="card mx-auto" style="max-width:520px; margin-top:40px;">
-          <article class="card-body">
-            {% include 'includes/alerts.html' %}
-            <header class="mb-4"><h4 class="card-title">Registro de Usuario</h4></header>
+    <div class="card mx-auto" style="max-width:520px; margin-top:40px;">
+        <article class="card-body">
+            {% include 'includes/alerts.html' %}  <!-- Para mostrar alertas generales, si hay -->
+            <header class="mb-4 text-center">
+                <h4 class="card-title">Registro de Usuario</h4>
+            </header>
             <form action="{% url 'register' %}" method="POST">
                 {% csrf_token %}
 
-                    <div class="form-row">
-                        <div class="col form-group">
-                            <label>Tu nombre</label>
-                              {{ form.first_name }}
-                        </div> <!-- form-group end.// -->
-                        <div class="col form-group">
-                            <label>Tu apellido</label>
-                              {{ form.last_name }}
-                        </div> <!-- form-group end.// -->
-                    </div> <!-- form-row end.// -->
+                <div class="form-row">
+                    <div class="col form-group">
+                        <label for="id_first_name">Tu nombre</label>
+                        <input type="text" name="first_name" class="form-control" id="id_first_name" placeholder="Ingrese su nombre" required>
+                    </div> <!-- form-group end.// -->
+                    <div class="col form-group">
+                        <label for="id_last_name">Tu apellido</label>
+                        <input type="text" name="last_name" class="form-control" id="id_last_name" placeholder="Ingrese sus apellidos" required>
+                    </div> <!-- form-group end.// -->
+                </div> <!-- form-row end.// -->
 
-                    <div class="form-row">
-                      <div class="col form-group">
-                          <label>Número de celular</label>
-                            {{ form.phone_number }}
-                      </div> <!-- form-group end.// -->
-                      <div class="col form-group">
-                          <label>Correo electrónico</label>
-                          {{ form.email }}
-                      </div> <!-- form-group end.// -->
-                    </div>
+                <div class="form-row">
+                    <div class="col form-group">
+                        <label for="id_phone_number">Número de celular</label>
+                        <input type="text" name="phone_number" class="form-control" id="id_phone_number" placeholder="Ingrese su número" required>
+                    </div> <!-- form-group end.// -->
+                    <div class="col form-group">
+                        <label for="id_email">Correo electrónico</label>
+                        <input type="email" name="email" class="form-control" id="id_email" placeholder="Ingrese su email" required>
+                    </div> <!-- form-group end.// -->
+                </div>
 
-                    <div class="form-row">
-                        <div class="form-group col-md-6">
-                            <label>Contraseña</label>
-                            {{ form.password }}
-                        </div> <!-- form-group end.// -->
-                        <div class="form-group col-md-6">
-                            <label>Repetir contraseña</label>
-                            {{ form.confirm_password }}
-                        </div> <!-- form-group end.// -->
-                    </div>
-                    <div class="form-group">
-                        <button type="submit" class="btn btn-primary btn-block"> Registrarme  </button>
-                    </div> <!-- form-group// -->
+                <div class="form-row">
+                    <div class="form-group col-md-6">
+                        <label for="id_password">Contraseña</label>
+                        <input type="password" name="password" class="form-control" id="id_password" placeholder="Ingrese su contraseña" required>
+                    </div> <!-- form-group end.// -->
+                    <div class="form-group col-md-6">
+                        <label for="id_confirm_password">Repetir contraseña</label>
+                        <input type="password" name="confirm_password" class="form-control" id="id_confirm_password" placeholder="Repita su contraseña" required>
+                    </div> <!-- form-group end.// -->
+                </div>
 
-                    {{ form.email.errors }}
-                    {{ form.non_field_errors }}
+                <div class="form-group">
+                    <button type="submit" class="btn btn-primary btn-block">Registrarme</button>
+                </div> <!-- form-group// -->
 
-                </form>
-            </article><!-- card-body.// -->
-        </div> <!-- card .// -->
-        <p class="text-center mt-4">¿Tienes ya una cuenta? <a href="">Inicia Sesión</a></p>
-        <br><br>
-    <!-- ============================ COMPONENT REGISTER  END.// ================================= -->
-
-
-    </section>
-    <!-- ========================= SECTION CONTENT END// ========================= -->
+                <!-- Mensajes de error -->
+                <div class="text-danger">
+                    {% if form.errors %}
+                        <ul>
+                            {% for field in form %}
+                                {% for error in field.errors %}
+                                    <li>{{ error }}</li>
+                                {% endfor %}
+                            {% endfor %}
+                            {% for error in form.non_field_errors %}
+                                <li>{{ error }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+                </div>
+            </form>
+        </article><!-- card-body.// -->
+    </div> <!-- card .// -->
+    <p class="text-center mt-4">¿Tienes ya una cuenta? <a href="{% url 'login' %}">Inicia Sesión</a></p>
+    <br><br>
+    <!-- ============================ COMPONENT REGISTER END.// ================================= -->
+</section>
+<!-- ========================= SECTION CONTENT END// ========================= -->
 
 {% endblock %}

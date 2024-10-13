@@ -8,6 +8,8 @@ import json
 from store.models import Product
 from django.core.mail import EmailMessage
 from django.template.loader import render_to_string
+from decimal import Decimal
+
 
 
 def payments(request):
@@ -83,13 +85,13 @@ def place_order(request, total=0, quantity=0):
     grand_total = 0
     tax = 0
 
+    # Realizar cálculos usando Decimal para precisión
     for cart_item in cart_items:
-        total += (cart_item.product.price * cart_item.quantity)
+        total += Decimal(cart_item.product.price) * Decimal(cart_item.quantity)
         quantity += cart_item.quantity
 
-    tax = round((16/100) * total, 2)
+    tax = round(Decimal(16) / Decimal(100) * total, 2)
     grand_total = total + tax
-
 
     if request.method == 'POST':
         form = OrderForm(request.POST)
@@ -112,10 +114,11 @@ def place_order(request, total=0, quantity=0):
             data.ip = request.META.get('REMOTE_ADDR')
             data.save()
 
-            yr=int(datetime.date.today().strftime('%Y'))
-            mt=int(datetime.date.today().strftime('%m'))
-            dt=int(datetime.date.today().strftime('%d'))
-            d = datetime.date(yr,mt,dt)
+            # Generar el número de orden
+            yr = int(datetime.date.today().strftime('%Y'))
+            mt = int(datetime.date.today().strftime('%m'))
+            dt = int(datetime.date.today().strftime('%d'))
+            d = datetime.date(yr, mt, dt)
             current_date = d.strftime("%Y%m%d")
             order_number = current_date + str(data.id)
             data.order_number = order_number

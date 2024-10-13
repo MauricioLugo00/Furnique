@@ -212,10 +212,12 @@ def cart(request, total=0, quantity=0, cart_items=None):
             cart_items = CartItem.objects.filter(cart=cart, is_active=True)
 
         for cart_item in cart_items:
-            total += (Decimal(cart_item.product.price) * Decimal(cart_item.quantity))
+            # Convertimos el precio y la cantidad a Decimal
+            total += Decimal(cart_item.product.price) * Decimal(cart_item.quantity)
             quantity += cart_item.quantity
 
-        tax = round((Decimal(16) / Decimal(100)) * total, 2)
+        # Cálculo de impuestos usando Decimal
+        tax = round(Decimal(16) / Decimal(100) * total, 2)
         grand_total = total + tax
 
     except ObjectDoesNotExist:
@@ -245,9 +247,12 @@ def checkout(request, total=0, quantity=0, cart_items=None):
             cart_items = CartItem.objects.filter(cart=cart, is_active=True)
 
         for cart_item in cart_items:
-            total += (cart_item.product.price * cart_item.quantity)
+            # Convertimos el precio y la cantidad a Decimal
+            total += Decimal(cart_item.product.price) * Decimal(cart_item.quantity)
             quantity += cart_item.quantity
-        tax = round((16/100) * total, 2)
+
+        # Cálculo de impuestos usando Decimal
+        tax = round(Decimal(16) / Decimal(100) * total, 2)
         grand_total = total + tax
 
     except ObjectDoesNotExist:
@@ -260,6 +265,5 @@ def checkout(request, total=0, quantity=0, cart_items=None):
         'tax': tax,
         'grand_total': grand_total,
     }
-
 
     return render(request, 'store/checkout.html', context)
