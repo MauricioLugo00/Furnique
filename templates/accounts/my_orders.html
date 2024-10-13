@@ -18,20 +18,37 @@
                                         <thead>
                                             <tr>
                                                 <th scope="col">Número de orden</th>
+                                                <th scope="col">Nombre de productos</th>
                                                 <th scope="col">Nombre de facturación</th>
                                                 <th scope="col">Teléfono</th>
                                                 <th scope="col">Total de la orden</th>
                                                 <th scope="col">Fecha</th>
+                                                <th scope="col">Acción</th>
                                             </tr>
                                         </thead>
                                         <tbody>
                                             {% for order in orders %}
                                                 <tr>
                                                     <th scope="row">{{ order.order_number }}</th>
+                                                    <td>
+                                                        {% for order_product in order.orderproduct_set.all %}
+                                                            {{ order_product.product.product_name }}{% if not forloop.last %}, {% endif %}
+                                                        {% endfor %}
+                                                    </td>
                                                     <td>{{ order.full_name }}</td>
                                                     <td>{{ order.phone }}</td>
                                                     <td>${{ order.order_total }}</td>
                                                     <td>{{ order.created_at }}</td>
+                                                    <td>
+                                                        <form action="{% url 'cancel_order' order.id %}" method="post">
+                                                            {% csrf_token %}
+                                                            {% if order.status != 'Cancelled' and not order.is_cancelled %}
+                                                                <button type="submit" class="btn btn-danger">Cancelar Orden</button>
+                                                            {% else %}
+                                                                <span class="text-muted">Orden Cancelada</span>
+                                                            {% endif %}
+                                                        </form>
+                                                    </td>
                                                 </tr>
                                             {% endfor %}
                                         </tbody>

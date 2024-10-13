@@ -72,14 +72,19 @@ def product_detail(request, category_slug, product_slug):
 
 def search(request):
     products = None
-    if product_count == 0:
-        messages.info(request, 'No se encontraron productos en Furnique que coincidan con tu búsqueda.')
-    
+    product_count = 0  # Inicializar product_count
+
     if 'keyword' in request.GET:
         keyword = request.GET['keyword']
         if keyword:
-            products = Product.objects.order_by('-created_date').filter(Q(description__icontains=keyword) | Q(product_name__icontains=keyword))
+            products = Product.objects.order_by('-created_date').filter(
+                Q(description__icontains=keyword) | Q(product_name__icontains=keyword)
+            )
             product_count = products.count()
+
+    if product_count == 0:
+        messages.info(request, 'No se encontraron productos en Furnique que coincidan con tu búsqueda.')
+
     context = {
         'products': products,
         'product_count': product_count,

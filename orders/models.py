@@ -42,6 +42,7 @@ class Order(models.Model):
     is_ordered = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    is_cancelled = models.BooleanField(default=False)
 
     def full_name(self):
         return f'{self.first_name} {self.last_name}'
@@ -65,6 +66,12 @@ class OrderProduct(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    def restock(self):
+        """Repone la cantidad del producto en stock."""
+        self.product.stock += self.quantity
+        self.product.save()
+
     def __str__(self):
         return f'{self.product.product_name} ({self.quantity})'
+
 

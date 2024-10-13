@@ -9,6 +9,10 @@ from store.models import Product
 from django.core.mail import EmailMessage
 from django.template.loader import render_to_string
 from decimal import Decimal
+from django.shortcuts import get_object_or_404
+from django.db import transaction
+
+
 
 
 
@@ -146,11 +150,11 @@ def order_complete(request):
 
     try:
         order = Order.objects.get(order_number=order_number, is_ordered=True)
-        ordered_products = OrderProduct.objects.filter(order_id=order.id)
+        ordered_products = OrderProduct.objects.filter(order_id=order.id)  # Esto está correcto
 
         subtotal = 0
         for i in ordered_products:
-            subtotal += i.product_price*i.quantity
+            subtotal += i.product_price * i.quantity
 
         payment = Payment.objects.get(payment_id=transID)
 
@@ -165,5 +169,33 @@ def order_complete(request):
 
         return render(request, 'orders/order_complete.html', context)
 
-    except(Payment.DoesNotExist, Order.DoesNotExist):
+    except (Payment.DoesNotExist, Order.DoesNotExist):
         return redirect('home')
+ 
+
+from django.contrib import messages
+
+@transaction.atomic
+def cancel_order(request, order_id):
+    order = get_object_or_404(Order, id=order_id, user=request.user)
+
+    if order.is_cancelled:
+        messages.error(request, "Esta orden ya ha sido cancelada.")
+        return redirect('my_orders')
+
+    if order.status == 'Completed':
+        messages.error(request, "No se puede cancelar una orden completada.")
+        return redirect('my_orders')
+
+    # Cancelar la orden
+    order.is_cancelled = True
+    order.status = 'Cancelled'
+    order.save()
+
+    # Reponer stock de productos
+    ordered_products = OrderProduct.objects.filter(order=order)
+    for item in ordered_products:
+        item.restock()
+
+    messages.success(request, "La orden ha sido cancelada exitosamente.")
+    return redirect('my_orders')
