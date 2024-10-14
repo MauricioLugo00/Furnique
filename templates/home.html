@@ -3,57 +3,47 @@
 
 {% block content %}
 <!-- ========================= SECTION MAIN ========================= -->
-<section class="section-intro padding-y-sm">
-<div class="container">
-
-<div class="intro-banner-wrap">
-	<img src="{% static 'images/banners/blackfriday.png' %}" class="img-fluid rounded">
-</div>
-
-</div> <!-- container //  -->
+<section class="section-intro d-flex align-items-center justify-content-center" style="height: 100vh; padding-bottom: 100px; margin-top: -100px;">
+    <div class="container text-center">
+        <h1 class="display-4">¡Bienvenido a Nuestra Tienda!</h1>
+        <p class="lead">Descubre los mejores productos para tus necesidades. Aquí encontrarás calidad, estilo y buen gusto en cada pieza.</p>
+        <p>Explora nuestro catálogo para conocer más sobre lo que ofrecemos y encuentra los artículos más vendidos para hacer tu vida más cómoda y moderna.</p>
+        <a href="{% url 'store' %}" class="btn btn-primary btn-lg mt-3">Ver nuestros productos</a>
+    </div>
 </section>
 <!-- ========================= SECTION MAIN END// ========================= -->
 
-<!-- ========================= SECTION  ========================= -->
-<section class="section-name padding-y-sm">
-<div class="container">
+<!-- ========================= SECTION BESTSELLERS ========================= -->
+<section class="section-name padding-y-sm" style="padding-top: 150px;">
+    <div class="container">
+        <header class="section-heading d-flex justify-content-between align-items-center">
+            <h3 class="section-title">Los más vendidos</h3>
+            <a href="{% url 'store' %}" class="btn btn-outline-primary">Ver Todo</a>
+        </header>
 
-<header class="section-heading">
-	<a href="{% url 'store' %}" class="btn btn-outline-primary float-right">Ver Todo</a>
-	<h3 class="section-title">Los más vendidos</h3>
-</header><!-- sect-heading -->
-
-
-<div class="row">
-
-	{% for product in products %}
-	<div class="col-md-3">
-		<div class="card card-product-grid">
-			<a href="{{ product.get_url }}" class="img-wrap"> <img src="{{ product.images.url }}"> </a>
-			<figcaption class="info-wrap">
-				<a href="{{ product.get_url }}" class="title">{{product.product_name}}</a>
-				<div class="price mt-1">{{ product.price }}</div> <!-- price-wrap.// -->
-
-				<div class="rating-star">
-					<span>
-						<i class="fa fa-star{% if product.averageReview < 0.5 %}-o{% elif product.averageReview >= 0.5 and product.averageReview < 1 %}-half-o {% endif %}" aria-hidden="true"></i>
-						<i class="fa fa-star{% if product.averageReview < 1.5 %}-o{% elif product.averageReview >= 1.5 and product.averageReview < 2 %}-half-o {% endif %}" aria-hidden="true"></i>
-						<i class="fa fa-star{% if product.averageReview < 2.5 %}-o{% elif product.averageReview >= 2.5 and product.averageReview < 3 %}-half-o {% endif %}" aria-hidden="true"></i>
-						<i class="fa fa-star{% if product.averageReview < 3.5 %}-o{% elif product.averageReview >= 3.5 and product.averageReview < 4 %}-half-o {% endif %}" aria-hidden="true"></i>
-						<i class="fa fa-star{% if product.averageReview < 4.5 %}-o{% elif product.averageReview >= 4.5 and product.averageReview < 5 %}-half-o {% endif %}" aria-hidden="true"></i>
-					</span>
-				</div>
-
-			</figcaption>
-		</div>
-	</div> <!-- col.// -->
-	{% endfor %}
-</div>
-</div><!-- container // -->
+        <div class="row">
+            {% for product in products|slice:":6" %}
+            <div class="col-md-4">
+                <div class="card card-product-grid">
+                    <a href="{{ product.get_url }}" class="img-wrap"> <img src="{{ product.images.url }}" class="img-fluid"> </a>
+                    <figcaption class="info-wrap">
+                        <a href="{{ product.get_url }}" class="title">{{ product.product_name }}</a>
+                        <div class="price mt-1">{{ product.price }}</div> <!-- price-wrap.// -->
+                        <div class="rating-star">
+                            <span>
+                                <i class="fa fa-star{% if product.averageReview < 0.5 %}-o{% elif product.averageReview >= 0.5 and product.averageReview < 1 %}-half-o {% endif %}" aria-hidden="true"></i>
+                                <i class="fa fa-star{% if product.averageReview < 1.5 %}-o{% elif product.averageReview >= 1.5 and product.averageReview < 2 %}-half-o {% endif %}" aria-hidden="true"></i>
+                                <i class="fa fa-star{% if product.averageReview < 2.5 %}-o{% elif product.averageReview >= 2.5 and product.averageReview < 3 %}-half-o {% endif %}" aria-hidden="true"></i>
+                                <i class="fa fa-star{% if product.averageReview < 3.5 %}-o{% elif product.averageReview >= 3.5 and product.averageReview < 4 %}-half-o {% endif %}" aria-hidden="true"></i>
+                                <i class="fa fa-star{% if product.averageReview < 4.5 %}-o{% elif product.averageReview >= 4.5 and product.averageReview < 5 %}-half-o {% endif %}" aria-hidden="true"></i>
+                            </span>
+                        </div>
+                    </figcaption>
+                </div>
+            </div> <!-- col.// -->
+            {% endfor %}
+        </div> <!-- row.// -->
+    </div> <!-- container.// -->
 </section>
-<!-- ========================= SECTION  END// ========================= -->
-
-</body>
-</html>
-
+<!-- ========================= SECTION BESTSELLERS END// ========================= -->
 {% endblock %}
