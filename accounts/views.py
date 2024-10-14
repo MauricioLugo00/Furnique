@@ -12,7 +12,6 @@ import random
 from django.views.decorators.csrf import csrf_protect
 
 @csrf_protect
-@csrf_protect
 def register(request):
     form = RegistrationForm()
     if request.method == 'POST':
@@ -20,7 +19,7 @@ def register(request):
         if form.is_valid():
             first_name = form.cleaned_data['first_name']
             last_name = form.cleaned_data['last_name']
-            phone_number = form.cleaned_data['phone_number']
+            username = form.cleaned_data['username']
             email = form.cleaned_data['email']
             password = form.cleaned_data['password']
             confirm_password = request.POST.get('confirm_password')
@@ -30,16 +29,13 @@ def register(request):
                 messages.error(request, 'Las contraseñas no coinciden.')
                 return redirect('register')
 
-            username = email.split("@")[0]  # Crear nombre de usuario a partir del email
-
-            # Crear el usuario sin activación
+            # Crear el usuario
             user = Accounts.objects.create_user(
                 first_name=first_name,
                 last_name=last_name,
                 username=username,
                 email=email,
                 password=password,
-                phone_number=phone_number,
             )
 
             # Crear el perfil del usuario
@@ -52,7 +48,6 @@ def register(request):
     return render(request, 'accounts/register.html', {'form': form})
 
 
-@csrf_protect
 @csrf_protect
 def login(request):
     if request.method == 'POST':

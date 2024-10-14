@@ -14,44 +14,44 @@
             </header>
             <form action="{% url 'register' %}" method="POST">
                 {% csrf_token %}
-
+            
                 <div class="form-row">
                     <div class="col form-group">
                         <label for="id_first_name">Tu nombre</label>
                         <input type="text" name="first_name" class="form-control" id="id_first_name" placeholder="Ingrese su nombre" required>
-                    </div> <!-- form-group end.// -->
+                    </div>
                     <div class="col form-group">
                         <label for="id_last_name">Tu apellido</label>
                         <input type="text" name="last_name" class="form-control" id="id_last_name" placeholder="Ingrese sus apellidos" required>
-                    </div> <!-- form-group end.// -->
-                </div> <!-- form-row end.// -->
-
+                    </div>
+                </div>
+            
                 <div class="form-row">
                     <div class="col form-group">
-                        <label for="id_phone_number">Número de celular</label>
-                        <input type="text" name="phone_number" class="form-control" id="id_phone_number" placeholder="Ingrese su número" required>
-                    </div> <!-- form-group end.// -->
+                        <label for="id_username">Nombre de usuario</label>
+                        <input type="text" name="username" class="form-control" id="id_username" placeholder="Ingrese su nombre de usuario" required>
+                    </div>
                     <div class="col form-group">
                         <label for="id_email">Correo electrónico</label>
                         <input type="email" name="email" class="form-control" id="id_email" placeholder="Ingrese su email" required>
-                    </div> <!-- form-group end.// -->
+                    </div>
                 </div>
-
+            
                 <div class="form-row">
                     <div class="form-group col-md-6">
                         <label for="id_password">Contraseña</label>
                         <input type="password" name="password" class="form-control" id="id_password" placeholder="Ingrese su contraseña" required>
-                    </div> <!-- form-group end.// -->
+                    </div>
                     <div class="form-group col-md-6">
                         <label for="id_confirm_password">Repetir contraseña</label>
                         <input type="password" name="confirm_password" class="form-control" id="id_confirm_password" placeholder="Repita su contraseña" required>
-                    </div> <!-- form-group end.// -->
+                    </div>
                 </div>
-
+            
                 <div class="form-group">
                     <button type="submit" class="btn btn-primary btn-block">Registrarme</button>
-                </div> <!-- form-group// -->
-
+                </div>
+            
                 <!-- Mensajes de error -->
                 <div class="text-danger">
                     {% if form.errors %}
@@ -68,6 +68,7 @@
                     {% endif %}
                 </div>
             </form>
+            
         </article><!-- card-body.// -->
     </div> <!-- card .// -->
     <p class="text-center mt-4">¿Tienes ya una cuenta? <a href="{% url 'login' %}">Inicia Sesión</a></p>

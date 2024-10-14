@@ -13,13 +13,13 @@ class RegistrationForm(forms.ModelForm):
 
     class Meta:
         model = Accounts
-        fields = ['first_name', 'last_name', 'phone_number', 'email', 'password']
+        fields = ['first_name', 'last_name', 'username', 'email', 'password']
 
     def __init__(self, *args, **kwargs):
         super(RegistrationForm, self).__init__(*args, **kwargs)
         self.fields['first_name'].widget.attrs['placeholder'] = 'Ingrese su nombre'
         self.fields['last_name'].widget.attrs['placeholder'] = 'Ingrese sus apellidos'
-        self.fields['phone_number'].widget.attrs['placeholder'] = 'Ingrese su número'
+        self.fields['username'].widget.attrs['placeholder'] = 'Ingrese su nombre de usuario'
         self.fields['email'].widget.attrs['placeholder'] = 'Ingrese su email'
 
     def clean(self):
